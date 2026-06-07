@@ -226,6 +226,79 @@ export class SQLiteDatabase implements IDatabase {
   async getParticipantRanking(): Promise<Participant[]> {
     return this.db.prepare('SELECT * FROM participants ORDER BY points DESC, name ASC').all() as Participant[];
   }
+
+  async getPointsHistory(filters: { teamId?: string; participantId?: string }): Promise<PointRecord[]> {
+    let query = 'SELECT * FROM points_history WHERE 1=1';
+    const params: any[] = [];
+
+    if (filters.teamId) {
+      query += ' AND teamId = ?';
+      params.push(filters.teamId);
+    }
+    if (filters.participantId) {
+      query += ' AND participantId = ?';
+      params.push(filters.participantId);
+    }
+
+    query += ' ORDER BY createdAt DESC';
+    return this.db.prepare(query).all(...params) as PointRecord[];
+  }
+
+  async updatePoints(id: string, points: number, description: string): Promise<void> {
+    const transaction = this.db.transaction(() => {
+      const oldRecord = this.db.prepare('SELECT * FROM points_history WHERE id = ?').get(id) as PointRecord;
+      if (!oldRecord) return;
+
+      const diff = points - oldRecord.points;
+
+      // Update team points if applicable
+      if (oldRecord.teamId) {
+        this.db.prepare('UPDATE teams SET points = points + ? WHERE id = ?').run(diff, oldRecord.teamId);
+      }
+      
+      // Update participant points if applicable
+      if (oldRecord.participantId) {
+        this.db.prepare('UPDATE participants SET points = points + ? WHERE id = ?').run(diff, oldRecord.participantId);
+        
+        // If participant point change, ensure team total is also updated (already done above if teamId exists)
+        // Note: our addPoints logic adds to BOTH if participantId is present.
+        if (!oldRecord.teamId) {
+            const p = this.db.prepare('SELECT teamId FROM participants WHERE id = ?').get(oldRecord.participantId) as { teamId: string };
+            if (p) this.db.prepare('UPDATE teams SET points = points + ? WHERE id = ?').run(diff, p.teamId);
+        }
+      }
+
+      this.db.prepare('UPDATE points_history SET points = ?, description = ? WHERE id = ?').run(points, description, id);
+    });
+
+    transaction();
+  }
+
+  async deletePoints(id: string): Promise<void> {
+    const transaction = this.db.transaction(() => {
+      const oldRecord = this.db.prepare('SELECT * FROM points_history WHERE id = ?').get(id) as PointRecord;
+      if (!oldRecord) return;
+
+      const pointsToSubtract = oldRecord.points;
+
+      if (oldRecord.teamId) {
+        this.db.prepare('UPDATE teams SET points = points - ? WHERE id = ?').run(pointsToSubtract, oldRecord.teamId);
+      }
+      
+      if (oldRecord.participantId) {
+        this.db.prepare('UPDATE participants SET points = points - ? WHERE id = ?').run(pointsToSubtract, oldRecord.participantId);
+        
+        if (!oldRecord.teamId) {
+            const p = this.db.prepare('SELECT teamId FROM participants WHERE id = ?').get(oldRecord.participantId) as { teamId: string };
+            if (p) this.db.prepare('UPDATE teams SET points = points - ? WHERE id = ?').run(pointsToSubtract, p.teamId);
+        }
+      }
+
+      this.db.prepare('DELETE FROM points_history WHERE id = ?').run(id);
+    });
+
+    transaction();
+  }
 }
 
 // Singleton instance

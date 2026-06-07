@@ -75,4 +75,9 @@ export interface IDatabase {
   // Rankings
   getTeamRanking(): Promise<Team[]>;
   getParticipantRanking(): Promise<Participant[]>;
+
+  // Points Details
+  getPointsHistory(filters: { teamId?: string; participantId?: string }): Promise<PointRecord[]>;
+  updatePoints(id: string, points: number, description: string): Promise<void>;
+  deletePoints(id: string): Promise<void>;
 }

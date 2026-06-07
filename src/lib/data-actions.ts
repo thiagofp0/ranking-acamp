@@ -107,3 +107,19 @@ export async function getParticipants() {
 export async function getCompetitions() {
   return await db.getCompetitions();
 }
+
+export async function getPointsHistory(filters: { teamId?: string; participantId?: string }) {
+  return await db.getPointsHistory(filters);
+}
+
+export async function updatePointsAction(id: string, points: number, description: string, revalidatePathStr: string) {
+  await db.updatePoints(id, points, description);
+  revalidatePath(revalidatePathStr);
+  revalidatePath("/");
+}
+
+export async function deletePointsAction(id: string, revalidatePathStr: string) {
+  await db.deletePoints(id);
+  revalidatePath(revalidatePathStr);
+  revalidatePath("/");
+}

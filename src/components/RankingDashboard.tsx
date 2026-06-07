@@ -225,7 +225,12 @@ export default function RankingDashboard({
                     </div>
 
                     <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-[#5c4033]">{item.name}</h3>
+                      <Link 
+                        href={activeTab === 'teams' ? `/equipe/${item.id}` : `/participante/${item.id}`}
+                        className="text-2xl font-bold text-[#5c4033] hover:text-[#8b4513] transition-colors decoration-dotted hover:underline"
+                      >
+                        {item.name}
+                      </Link>
                       {item.teamName && (
                           <p className="text-sm text-[#8b4513] font-medium flex items-center gap-1">
                               <Users className="w-3 h-3" /> {item.teamName}
