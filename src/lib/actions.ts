@@ -1,20 +1,30 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { encrypt } from "./auth";
+import { encrypt } from "./session";
+import { getDatabase } from "./database/sqlite";
+import bcrypt from "bcryptjs";
 
 export async function loginAction(username: string, pass: string) {
-  // Simplificado para o desafio
-  if (username === "admin" && pass === "jeremias2913") {
-    const expires = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    const session = await encrypt({ username, expires });
+  const db = getDatabase();
+  let admin = await db.getAdminByUsername(username);
 
-    (await cookies()).set("session", session, { expires, httpOnly: true });
+  if (admin && admin.passwordHash && await bcrypt.compare(pass, admin.passwordHash)) {
+    const expires = new Date(Date.now() + 2 * 60 * 60 * 1000);
+    const session = await encrypt({ 
+      userId: admin.id, 
+      username: admin.username, 
+      expires 
+    });
+
+    const cookieStore = await cookies();
+    cookieStore.set("session", session, { expires, httpOnly: true });
     return true;
   }
   return false;
 }
 
 export async function logoutAction() {
-  (await cookies()).set("session", "", { expires: new Date(0) });
+  const cookieStore = await cookies();
+  cookieStore.set("session", "", { expires: new Date(0) });
 }

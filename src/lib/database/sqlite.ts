@@ -1,5 +1,5 @@
 import Database from 'better-sqlite3';
-import { IDatabase, Team, Participant, Competition } from './types';
+import { IDatabase, Team, Participant, Competition, Admin } from './types';
 import path from 'path';
 
 export class SQLiteDatabase implements IDatabase {
@@ -49,9 +49,29 @@ export class SQLiteDatabase implements IDatabase {
       CREATE TABLE IF NOT EXISTS admins (
         id TEXT PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL
+        passwordHash TEXT NOT NULL
       );
     `);
+
+    // Migração: Renomear coluna password para passwordHash se existir
+    const tableInfo = this.db.prepare("PRAGMA table_info(admins)").all() as any[];
+    const hasOldPasswordColumn = tableInfo.some(col => col.name === 'password');
+    const hasNewPasswordColumn = tableInfo.some(col => col.name === 'passwordHash');
+
+    if (hasOldPasswordColumn && !hasNewPasswordColumn) {
+      this.db.exec("ALTER TABLE admins RENAME COLUMN password TO passwordHash");
+    }
+  }
+
+  async getAdminByUsername(username: string): Promise<Admin | null> {
+    const admin = this.db.prepare('SELECT * FROM admins WHERE username = ?').get(username);
+    return (admin as Admin) || null;
+  }
+
+  async createAdmin(username: string, passwordHash: string): Promise<Admin> {
+    const id = crypto.randomUUID();
+    this.db.prepare('INSERT INTO admins (id, username, passwordHash) VALUES (?, ?, ?)').run(id, username, passwordHash);
+    return { id, username, passwordHash };
   }
 
   async getTeams(): Promise<Team[]> {

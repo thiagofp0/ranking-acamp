@@ -17,6 +17,12 @@ export interface Competition {
   description?: string;
 }
 
+export interface Admin {
+  id: string;
+  username: string;
+  passwordHash: string;
+}
+
 export interface PointRecord {
   id: string;
   teamId?: string;
@@ -28,6 +34,10 @@ export interface PointRecord {
 }
 
 export interface IDatabase {
+  // Admins
+  getAdminByUsername(username: string): Promise<Admin | null>;
+  createAdmin(username: string, passwordHash: string): Promise<Admin>;
+
   // Teams
   getTeams(): Promise<Team[]>;
   createTeam(name: string): Promise<Team>;

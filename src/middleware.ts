@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from './lib/auth';
+import { decrypt } from './lib/session';
 
 export async function middleware(request: NextRequest) {
-  const session = await getSession();
+  const cookie = request.cookies.get('session')?.value;
+  const session = cookie ? await decrypt(cookie) : null;
 
   // Rotas que exigem autenticação
   const protectedRoutes = ['/admin'];
