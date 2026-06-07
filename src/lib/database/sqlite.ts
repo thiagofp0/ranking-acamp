@@ -231,11 +231,14 @@ export class SQLiteDatabase implements IDatabase {
     let query = 'SELECT * FROM points_history WHERE 1=1';
     const params: any[] = [];
 
-    if (filters.teamId) {
-      query += ' AND teamId = ?';
-      params.push(filters.teamId);
-    }
-    if (filters.participantId) {
+    if (filters.teamId && filters.participantId) {
+       query += ' AND (teamId = ? OR participantId = ?)';
+       params.push(filters.teamId, filters.participantId);
+    } else if (filters.teamId) {
+      // Se houver apenas teamId, queremos os pontos da equipe E os pontos de participantes dessa equipe
+      query += ` AND (teamId = ? OR participantId IN (SELECT id FROM participants WHERE teamId = ?))`;
+      params.push(filters.teamId, filters.teamId);
+    } else if (filters.participantId) {
       query += ' AND participantId = ?';
       params.push(filters.participantId);
     }

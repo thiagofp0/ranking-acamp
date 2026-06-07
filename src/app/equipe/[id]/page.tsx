@@ -18,6 +18,7 @@ export default async function EquipeDetalhesPage({ params }: { params: { id: str
     redirect("/");
   }
 
+  const participants = await db.getParticipants();
   const history = await getPointsHistory({ teamId: id });
   const competitions = await db.getCompetitions();
 
@@ -65,38 +66,53 @@ export default async function EquipeDetalhesPage({ params }: { params: { id: str
             <thead className="bg-[#fdf6e3] border-b border-[#d4af37]/20 text-[#8b4513]">
               <tr>
                 <th className="px-6 py-3 font-bold text-sm">Data</th>
+                <th className="px-6 py-3 font-bold text-sm">Beneficiário</th>
                 <th className="px-6 py-3 font-bold text-sm">Prova / Motivo</th>
                 <th className="px-6 py-3 font-bold text-sm">Valor</th>
                 {session && <th className="px-6 py-3 font-bold text-sm w-24">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-[#d4af37]/10">
-              {history.map((record) => (
-                <tr key={record.id} className="group hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">
-                    {new Date(record.createdAt).toLocaleDateString("pt-BR")}
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="font-bold text-[#5c4033]">
-                      {competitions.find(c => c.id === record.competitionId)?.name || "Lançamento Avulso"}
-                    </p>
-                    <p className="text-sm text-[#8b4513] italic">{record.description}</p>
-                  </td>
-                  <td className={`px-6 py-4 font-black ${record.points >= 0 ? "text-green-700" : "text-red-700"}`}>
-                    {record.points > 0 ? `+${record.points}` : record.points}
-                  </td>
-                  {session && (
-                    <td className="px-6 py-4">
-                      <PointRowActions 
-                        record={record} 
-                        revalidatePath={`/equipe/${id}`}
-                        onUpdate={handleUpdate}
-                        onDelete={handleDelete}
-                      />
+              {history.map((record) => {
+                const participant = participants.find(p => p.id === record.participantId);
+                return (
+                  <tr key={record.id} className="group hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">
+                      {new Date(record.createdAt).toLocaleDateString("pt-BR")}
                     </td>
-                  )}
-                </tr>
-              ))}
+                    <td className="px-6 py-4">
+                      {participant ? (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 bg-blue-50 text-blue-700 rounded border border-blue-100">
+                           {participant.name}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-100">
+                           Equipe
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="font-bold text-[#5c4033]">
+                        {competitions.find(c => c.id === record.competitionId)?.name || "Lançamento Avulso"}
+                      </p>
+                      <p className="text-sm text-[#8b4513] italic">{record.description}</p>
+                    </td>
+                    <td className={`px-6 py-4 font-black ${record.points >= 0 ? "text-green-700" : "text-red-700"}`}>
+                      {record.points > 0 ? `+${record.points}` : record.points}
+                    </td>
+                    {session && (
+                      <td className="px-6 py-4">
+                        <PointRowActions 
+                          record={record} 
+                          revalidatePath={`/equipe/${id}`}
+                          onUpdate={handleUpdate}
+                          onDelete={handleDelete}
+                        />
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
               {history.length === 0 && (
                 <tr>
                   <td colSpan={session ? 4 : 3} className="px-6 py-12 text-center text-gray-400 italic">
