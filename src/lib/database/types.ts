@@ -59,8 +59,8 @@ export interface IDatabase {
   
   // Competitions
   getCompetitions(): Promise<Competition[]>;
-  createCompetition(name: string, description?: string): Promise<Competition>;
-  updateCompetition(id: string, name: string, description?: string): Promise<void>;
+  createCompetition(name: string, description?: string, pointsValue?: number): Promise<Competition>;
+  updateCompetition(id: string, name: string, description?: string, pointsValue?: number, isCompleted?: boolean, winnerTeamId?: string): Promise<void>;
   deleteCompetition(id: string): Promise<void>;
   
   // Scoring

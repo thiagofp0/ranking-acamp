@@ -10,6 +10,7 @@ export default async function Home() {
   
   const db = getDatabase();
   const teams = await db.getTeams();
+  const participants = await db.getParticipants();
   const competitions = await db.getCompetitions();
   const allPoints = await db.getPointsHistory({});
   
@@ -25,6 +26,7 @@ export default async function Home() {
         initialParticipantRanking={participantRanking}
         competitions={competitions}
         teams={teams}
+        participants={participants}
         allPoints={allPoints}
         isLoggedIn={!!session}
       />

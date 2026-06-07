@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Trophy, Users, User, ScrollText, Download, ShieldCheck, CheckCircle2, Clock, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { Competition, Team, PointRecord } from "@/lib/database/types";
+import { Competition, Team, Participant, PointRecord } from "@/lib/database/types";
 
 interface RankingItem {
   id: string;
@@ -18,6 +18,7 @@ export default function RankingDashboard({
   initialParticipantRanking,
   competitions = [],
   teams = [],
+  participants = [],
   allPoints = [],
   isLoggedIn = false,
 }: {
@@ -25,6 +26,7 @@ export default function RankingDashboard({
   initialParticipantRanking: RankingItem[];
   competitions?: Competition[];
   teams?: Team[];
+  participants?: Participant[];
   allPoints?: PointRecord[];
   isLoggedIn?: boolean;
 }) {
@@ -56,11 +58,21 @@ export default function RankingDashboard({
   const exportFullPointsHistory = () => {
     const headers = "Data,Equipe,Participante,Prova/Motivo,Pontos,Descricao";
     const rows = allPoints.map(p => {
-      const team = teams.find(t => t.id === p.teamId)?.name || teams.find(t => t.id === teams.find(part => part.id === p.participantId)?.teamId)?.name || "N/A";
-      const participant = initialParticipantRanking.find(part => part.id === p.participantId)?.name || "Equipe";
+      // Find team name
+      let teamName = "N/A";
+      if (p.teamId) {
+        teamName = teams.find(t => t.id === p.teamId)?.name || "N/A";
+      } else if (p.participantId) {
+        const part = participants.find(part => part.id === p.participantId);
+        if (part) {
+          teamName = teams.find(t => t.id === part.teamId)?.name || "N/A";
+        }
+      }
+
+      const participant = participants.find(part => part.id === p.participantId)?.name || "Equipe";
       const comp = competitions.find(c => c.id === p.competitionId)?.name || "Avulso";
       const date = new Date(p.createdAt).toLocaleDateString("pt-BR");
-      return `${date},${team},${participant},${comp},${p.points},${p.description}`;
+      return `${date},${teamName},${participant},${comp},${p.points},${p.description}`;
     });
     downloadCSV(headers, rows, "historico_completo_pontos.csv");
   };
