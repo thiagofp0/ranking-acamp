@@ -35,8 +35,12 @@ export interface PointRecord {
 
 export interface IDatabase {
   // Admins
+  getAdmins(): Promise<Admin[]>;
   getAdminByUsername(username: string): Promise<Admin | null>;
+  getAdminById(id: string): Promise<Admin | null>;
   createAdmin(username: string, passwordHash: string): Promise<Admin>;
+  updateAdmin(id: string, data: { username?: string; passwordHash?: string }): Promise<void>;
+  deleteAdmin(id: string): Promise<void>;
 
   // Teams
   getTeams(): Promise<Team[]>;

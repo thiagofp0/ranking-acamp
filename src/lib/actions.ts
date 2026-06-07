@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { encrypt } from "./session";
 import { getDatabase } from "./database/sqlite";
 import bcrypt from "bcryptjs";
+import { redirect } from "next/navigation";
 
 export async function loginAction(username: string, pass: string) {
   const db = getDatabase();
@@ -27,4 +28,5 @@ export async function loginAction(username: string, pass: string) {
 export async function logoutAction() {
   const cookieStore = await cookies();
   cookieStore.set("session", "", { expires: new Date(0) });
+  redirect("/login");
 }

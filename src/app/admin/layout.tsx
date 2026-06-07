@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Users, Trophy, ScrollText, LogOut } from "lucide-react";
+import { BookOpen, Users, Trophy, ScrollText, LogOut, ShieldAlert } from "lucide-react";
 import { logoutAction } from "@/lib/actions";
 
 export default function AdminLayout({
@@ -33,7 +33,11 @@ export default function AdminLayout({
             <ScrollText className="w-5 h-5 group-hover:text-[#d4af37]" />
             <span className="font-medium">Lançar Pontos</span>
           </Link>
-          <Link href="/" className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#8b4513] transition-colors group border-t border-[#d4af37]/20 mt-4 pt-4">
+          <Link href="/admin/usuarios" className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#8b4513] transition-colors group border-t border-[#d4af37]/20 pt-4">
+            <ShieldAlert className="w-5 h-5 text-[#d4af37]" />
+            <span className="font-medium">Gerenciar Escribas</span>
+          </Link>
+          <Link href="/" className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#8b4513] transition-colors group">
             <Trophy className="w-5 h-5 text-[#d4af37]" />
             <span className="font-medium">Ver Ranking</span>
           </Link>

@@ -68,10 +68,33 @@ export class SQLiteDatabase implements IDatabase {
     return (admin as Admin) || null;
   }
 
+  async getAdminById(id: string): Promise<Admin | null> {
+    const admin = this.db.prepare('SELECT * FROM admins WHERE id = ?').get(id);
+    return (admin as Admin) || null;
+  }
+
+  async getAdmins(): Promise<Admin[]> {
+    return this.db.prepare('SELECT id, username, passwordHash FROM admins ORDER BY username').all() as Admin[];
+  }
+
   async createAdmin(username: string, passwordHash: string): Promise<Admin> {
     const id = crypto.randomUUID();
     this.db.prepare('INSERT INTO admins (id, username, passwordHash) VALUES (?, ?, ?)').run(id, username, passwordHash);
     return { id, username, passwordHash };
+  }
+
+  async updateAdmin(id: string, data: { username?: string; passwordHash?: string }): Promise<void> {
+    if (data.username && data.passwordHash) {
+      this.db.prepare('UPDATE admins SET username = ?, passwordHash = ? WHERE id = ?').run(data.username, data.passwordHash, id);
+    } else if (data.username) {
+      this.db.prepare('UPDATE admins SET username = ? WHERE id = ?').run(data.username, id);
+    } else if (data.passwordHash) {
+      this.db.prepare('UPDATE admins SET passwordHash = ? WHERE id = ?').run(data.passwordHash, id);
+    }
+  }
+
+  async deleteAdmin(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM admins WHERE id = ?').run(id);
   }
 
   async getTeams(): Promise<Team[]> {
