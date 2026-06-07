@@ -11,6 +11,7 @@ export default async function Home() {
   const db = getDatabase();
   const teams = await db.getTeams();
   const competitions = await db.getCompetitions();
+  const allPoints = await db.getPointsHistory({});
   
   const participantRanking = participantRankingRaw.map(p => ({
     ...p,
@@ -24,6 +25,7 @@ export default async function Home() {
         initialParticipantRanking={participantRanking}
         competitions={competitions}
         teams={teams}
+        allPoints={allPoints}
         isLoggedIn={!!session}
       />
     </main>

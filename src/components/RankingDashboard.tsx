@@ -2,9 +2,9 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Trophy, Users, User, ScrollText, Download, ShieldCheck, CheckCircle2, Clock } from "lucide-react";
+import { Trophy, Users, User, ScrollText, Download, ShieldCheck, CheckCircle2, Clock, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { Competition, Team } from "@/lib/database/types";
+import { Competition, Team, PointRecord } from "@/lib/database/types";
 
 interface RankingItem {
   id: string;
@@ -18,33 +18,57 @@ export default function RankingDashboard({
   initialParticipantRanking,
   competitions = [],
   teams = [],
+  allPoints = [],
   isLoggedIn = false,
 }: {
   initialTeamRanking: RankingItem[];
   initialParticipantRanking: RankingItem[];
   competitions?: Competition[];
   teams?: Team[];
+  allPoints?: PointRecord[];
   isLoggedIn?: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<"teams" | "participants" | "provas">("teams");
+  const [showExportOptions, setShowExportOptions] = useState(false);
 
   const data = activeTab === "teams" ? initialTeamRanking : (activeTab === "participants" ? initialParticipantRanking : []);
 
-  const exportToCSV = () => {
+  const downloadCSV = (headers: string, rows: string[], filename: string) => {
+    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" + [headers, ...rows].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportRanking = () => {
     const headers = activeTab === "teams" ? "Posicao,Equipe,Pontos" : "Posicao,Nome,Equipe,Pontos";
     const rows = data.map((item, index) => {
         if (activeTab === "teams") return `${index + 1},${item.name},${item.points}`;
         return `${index + 1},${item.name},${item.teamName || 'N/A'},${item.points}`;
     });
-    
-    const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].join("\n");
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `ranking_${activeTab}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    downloadCSV(headers, rows, `ranking_${activeTab}.csv`);
+  };
+
+  const exportFullPointsHistory = () => {
+    const headers = "Data,Equipe,Participante,Prova/Motivo,Pontos,Descricao";
+    const rows = allPoints.map(p => {
+      const team = teams.find(t => t.id === p.teamId)?.name || teams.find(t => t.id === teams.find(part => part.id === p.participantId)?.teamId)?.name || "N/A";
+      const participant = initialParticipantRanking.find(part => part.id === p.participantId)?.name || "Equipe";
+      const comp = competitions.find(c => c.id === p.competitionId)?.name || "Avulso";
+      const date = new Date(p.createdAt).toLocaleDateString("pt-BR");
+      return `${date},${team},${participant},${comp},${p.points},${p.description}`;
+    });
+    downloadCSV(headers, rows, "historico_completo_pontos.csv");
+  };
+
+  const exportParticipantsList = () => {
+    const headers = "Nome,Equipe,Pontos Totais";
+    const rows = initialParticipantRanking.map(p => `${p.name},${p.teamName || 'N/A'},${p.points}`);
+    downloadCSV(headers, rows, "lista_participantes.csv");
   };
 
   return (
@@ -80,6 +104,7 @@ export default function RankingDashboard({
         {/* Navigation Tabs */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex bg-[#5c4033] p-1 rounded-xl border-2 border-[#d4af37] shadow-lg">
+            {/* ... botões das tabs (já existentes) ... */}
             <button
               onClick={() => setActiveTab("teams")}
               className={`flex items-center gap-2 px-8 py-3 rounded-lg transition-all ${
@@ -115,13 +140,46 @@ export default function RankingDashboard({
             </button>
           </div>
 
-          <button 
-            onClick={exportToCSV}
-            className={`flex items-center gap-2 px-6 py-3 bg-white border-2 border-[#8b4513] text-[#8b4513] rounded-xl hover:bg-[#8b4513] hover:text-white transition-all font-bold group shadow-md ${activeTab === 'provas' ? 'invisible' : ''}`}
-          >
-            <Download className="w-5 h-5 group-hover:bounce" />
-            Exportar Ranking
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowExportOptions(!showExportOptions)}
+              className="flex items-center gap-2 px-6 py-3 bg-white border-2 border-[#8b4513] text-[#8b4513] rounded-xl hover:bg-[#8b4513] hover:text-white transition-all font-bold group shadow-md"
+            >
+              <Download className="w-5 h-5 group-hover:bounce" />
+              Exportar Dados
+              <ChevronDown className={`w-4 h-4 transition-transform ${showExportOptions ? 'rotate-180' : ''}`} />
+            </button>
+
+            <AnimatePresence>
+              {showExportOptions && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 mt-2 w-64 bg-white border-2 border-[#d4af37] rounded-xl shadow-2xl z-50 overflow-hidden"
+                >
+                  <button 
+                    onClick={() => { exportRanking(); setShowExportOptions(false); }}
+                    className="w-full text-left px-4 py-3 hover:bg-[#fdf6e3] text-[#5c4033] font-medium border-b border-[#d4af37]/10 flex items-center gap-2"
+                  >
+                    <Trophy className="w-4 h-4" /> Exportar Ranking Atual
+                  </button>
+                  <button 
+                    onClick={() => { exportParticipantsList(); setShowExportOptions(false); }}
+                    className="w-full text-left px-4 py-3 hover:bg-[#fdf6e3] text-[#5c4033] font-medium border-b border-[#d4af37]/10 flex items-center gap-2"
+                  >
+                    <Users className="w-4 h-4" /> Lista de Participantes
+                  </button>
+                  <button 
+                    onClick={() => { exportFullPointsHistory(); setShowExportOptions(false); }}
+                    className="w-full text-left px-4 py-3 hover:bg-[#fdf6e3] text-[#5c4033] font-bold text-[#8b4513] flex items-center gap-2"
+                  >
+                    <ScrollText className="w-4 h-4" /> Histórico Completo (Excel)
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {isLoggedIn && (
             <Link 

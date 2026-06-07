@@ -108,6 +108,10 @@ export async function getCompetitions() {
   return await db.getCompetitions();
 }
 
+export async function getAllPointsHistory() {
+  return await db.getPointsHistory({});
+}
+
 export async function getPointsHistory(filters: { teamId?: string; participantId?: string }) {
   return await db.getPointsHistory(filters);
 }
