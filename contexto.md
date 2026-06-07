@@ -1,0 +1,8 @@
+## Contexto
+Estou implementando um sistema de ranking de equipes para uma gincana para adolescentes. O sistema deve ser capaz de ter uam área para fazer login, uma área para cadastrar as equipes e também os participantes nas equipes. Além disso, deve ter uma área para cadastrar as provas e os pontos que cada equipe fez em cada prova. Também deve ser possível lançar pontos avulsos por equipe e por participante. Os pontos de participante contam para a equipe, mas os pontos de equipe não contam para os participantes. O sistema deve ser capaz de calcular o ranking das equipes com base nos pontos acumulados. O sistema deve ter uma página que mostra o ranking de forma animada e interativa. O tema do sistema deve ser "bíblia". 
+
+Crie em react, use um banco de dados simples sqlite para armazenar os dados e utilize uma biblioteca de animação como o Framer Motion para a página de ranking. O sistema deve ser responsivo e fácil de usar, com uma interface amigável para os adolescentes. Certifique-se de implementar autenticação para a área de login e proteja as rotas que exigem autenticação.
+
+Também permita que eu possa exportar os dados do ranking em formato CSV para análise posterior. O sistema deve ser desenvolvido com boas práticas de código, incluindo a organização dos arquivos, a utilização de componentes reutilizáveis e a implementação de testes unitários para garantir a qualidade do código.
+
+Também crie um arquivo yml para fazer o deploy do sistema em um serviço de hospedagem como o Heroku ou o Vercel, garantindo que o processo de implantação seja automatizado e fácil de executar. O arquivo yml deve incluir as etapas necessárias para configurar o ambiente, instalar as dependências, rodar os testes e iniciar a aplicação.
