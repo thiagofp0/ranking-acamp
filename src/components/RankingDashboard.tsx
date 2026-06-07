@@ -2,7 +2,8 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Trophy, Users, User, ScrollText, Download } from "lucide-react";
+import { Trophy, Users, User, ScrollText, Download, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 interface RankingItem {
   id: string;
@@ -14,9 +15,11 @@ interface RankingItem {
 export default function RankingDashboard({
   initialTeamRanking,
   initialParticipantRanking,
+  isLoggedIn = false,
 }: {
   initialTeamRanking: RankingItem[];
   initialParticipantRanking: RankingItem[];
+  isLoggedIn?: boolean;
 }) {
   const [activeTab, setActiveTab] = useState<"teams" | "participants">("teams");
 
@@ -103,6 +106,16 @@ export default function RankingDashboard({
             <Download className="w-5 h-5 group-hover:bounce" />
             Exportar Ranking
           </button>
+
+          {isLoggedIn && (
+            <Link 
+              href="/admin"
+              className="flex items-center gap-2 px-6 py-3 bg-[#5c4033] text-white rounded-xl hover:bg-[#8b4513] transition-all font-bold shadow-md border-2 border-[#d4af37]"
+            >
+              <ShieldCheck className="w-5 h-5 text-[#d4af37]" />
+              Painel do Escriba
+            </Link>
+          )}
         </div>
 
         {/* Ranking List */}
