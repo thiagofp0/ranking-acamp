@@ -15,6 +15,9 @@ export interface Competition {
   id: string;
   name: string;
   description?: string;
+  pointsValue: number;
+  isCompleted: boolean;
+  winnerTeamId?: string;
 }
 
 export interface Admin {

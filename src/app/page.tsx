@@ -8,9 +8,9 @@ export default async function Home() {
   const participantRankingRaw = await getParticipantRanking();
   const session = await getSession();
   
-  // Para exibir o nome da equipe no ranking individual
   const db = getDatabase();
   const teams = await db.getTeams();
+  const competitions = await db.getCompetitions();
   
   const participantRanking = participantRankingRaw.map(p => ({
     ...p,
@@ -22,6 +22,8 @@ export default async function Home() {
       <RankingDashboard 
         initialTeamRanking={teamRanking} 
         initialParticipantRanking={participantRanking}
+        competitions={competitions}
+        teams={teams}
         isLoggedIn={!!session}
       />
     </main>

@@ -30,7 +30,11 @@ export class SQLiteDatabase implements IDatabase {
       CREATE TABLE IF NOT EXISTS competitions (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
-        description TEXT
+        description TEXT,
+        pointsValue INTEGER DEFAULT 0,
+        isCompleted INTEGER DEFAULT 0,
+        winnerTeamId TEXT,
+        FOREIGN KEY (winnerTeamId) REFERENCES teams(id)
       );
 
       CREATE TABLE IF NOT EXISTS points_history (
@@ -146,17 +150,36 @@ export class SQLiteDatabase implements IDatabase {
   }
 
   async getCompetitions(): Promise<Competition[]> {
-    return this.db.prepare('SELECT * FROM competitions').all() as Competition[];
+    const rows = this.db.prepare('SELECT * FROM competitions').all() as any[];
+    return rows.map(row => ({
+      ...row,
+      isCompleted: Boolean(row.isCompleted)
+    }));
   }
 
-  async createCompetition(name: string, description?: string): Promise<Competition> {
+  async createCompetition(name: string, description?: string, pointsValue: number = 0): Promise<Competition> {
     const id = crypto.randomUUID();
-    this.db.prepare('INSERT INTO competitions (id, name, description) VALUES (?, ?, ?)').run(id, name, description);
-    return { id, name, description };
+    this.db.prepare('INSERT INTO competitions (id, name, description, pointsValue) VALUES (?, ?, ?, ?)').run(id, name, description || null, pointsValue);
+    return { id, name, description, pointsValue, isCompleted: false };
   }
 
-  async updateCompetition(id: string, name: string, description?: string): Promise<void> {
-    this.db.prepare('UPDATE competitions SET name = ?, description = ? WHERE id = ?').run(name, description || null, id);
+  async updateCompetition(id: string, name: string, description?: string, pointsValue?: number, isCompleted?: boolean, winnerTeamId?: string): Promise<void> {
+    this.db.prepare(`
+      UPDATE competitions 
+      SET name = ?, 
+          description = ?, 
+          pointsValue = ?, 
+          isCompleted = ?, 
+          winnerTeamId = ? 
+      WHERE id = ?
+    `).run(
+      name, 
+      description || null, 
+      pointsValue ?? 0, 
+      isCompleted ? 1 : 0, 
+      winnerTeamId || null, 
+      id
+    );
   }
 
   async deleteCompetition(id: string): Promise<void> {

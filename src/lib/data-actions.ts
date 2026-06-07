@@ -62,13 +62,22 @@ export async function deleteParticipantAction(id: string) {
   revalidatePath("/");
 }
 
-export async function createCompetition(name: string, description?: string) {
-  await db.createCompetition(name, description);
+export async function createCompetition(name: string, description?: string, pointsValue: number = 0) {
+  await db.createCompetition(name, description, pointsValue);
   revalidatePath("/admin/provas");
+  revalidatePath("/");
 }
-export async function updateCompetitionAction(id: string, name: string, description?: string) {
-  await db.updateCompetition(id, name, description);
+export async function updateCompetitionAction(
+  id: string, 
+  name: string, 
+  description?: string, 
+  pointsValue?: number, 
+  isCompleted?: boolean, 
+  winnerTeamId?: string
+) {
+  await db.updateCompetition(id, name, description, pointsValue, isCompleted, winnerTeamId);
   revalidatePath("/admin/provas");
+  revalidatePath("/");
 }
 
 export async function deleteCompetitionAction(id: string) {
