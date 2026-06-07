@@ -1,5 +1,6 @@
-import { getTeams, createTeam } from "@/lib/data-actions";
+import { getTeams, createTeam, updateTeamAction, deleteTeamAction } from "@/lib/data-actions";
 import { BookMarked } from "lucide-react";
+import TeamRowActions from "@/components/TeamRowActions";
 
 export default async function EquipesPage() {
   const teams = await getTeams();
@@ -8,6 +9,16 @@ export default async function EquipesPage() {
     "use server";
     const name = formData.get("name") as string;
     if (name) await createTeam(name);
+  };
+
+  const handleUpdate = async (id: string, name: string) => {
+    "use server";
+    await updateTeamAction(id, name);
+  };
+
+  const handleDelete = async (id: string) => {
+    "use server";
+    await deleteTeamAction(id);
   };
 
   return (
@@ -38,18 +49,26 @@ export default async function EquipesPage() {
             <tr>
               <th className="px-6 py-3 font-serif italic">Nome da Equipe</th>
               <th className="px-6 py-3 font-serif italic">Pontos Acumulados</th>
+              <th className="px-6 py-3 font-serif italic w-32">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#d4af37]/30">
             {teams.map((team) => (
-              <tr key={team.id} className="hover:bg-[#fdf6e3] transition-colors">
+              <tr key={team.id} className="hover:bg-[#fdf6e3] transition-colors group">
                 <td className="px-6 py-4 text-[#5c4033] font-medium">{team.name}</td>
                 <td className="px-6 py-4 text-[#8b4513] font-bold">{team.points}</td>
+                <td className="px-6 py-4">
+                  <TeamRowActions 
+                    team={team} 
+                    onUpdate={handleUpdate} 
+                    onDelete={handleDelete} 
+                  />
+                </td>
               </tr>
             ))}
             {teams.length === 0 && (
               <tr>
-                <td colSpan={2} className="px-6 py-8 text-center text-gray-500 italic">
+                <td colSpan={3} className="px-6 py-8 text-center text-gray-500 italic">
                   Nenhuma equipe cadastrada ainda.
                 </td>
               </tr>

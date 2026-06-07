@@ -1,5 +1,6 @@
-import { getCompetitions, createCompetition } from "@/lib/data-actions";
+import { getCompetitions, createCompetition, updateCompetitionAction, deleteCompetitionAction } from "@/lib/data-actions";
 import { Trophy } from "lucide-react";
+import CompetitionRowActions from "@/components/CompetitionRowActions";
 
 export default async function ProvasPage() {
   const competitions = await getCompetitions();
@@ -9,6 +10,16 @@ export default async function ProvasPage() {
     const name = formData.get("name") as string;
     const description = formData.get("description") as string;
     if (name) await createCompetition(name, description);
+  };
+
+  const handleUpdate = async (id: string, name: string, description?: string) => {
+    "use server";
+    await updateCompetitionAction(id, name, description);
+  };
+
+  const handleDelete = async (id: string) => {
+    "use server";
+    await deleteCompetitionAction(id);
   };
 
   return (
@@ -40,8 +51,15 @@ export default async function ProvasPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {competitions.map((comp) => (
-          <div key={comp.id} className="p-6 bg-[#fdf6e3] rounded-lg border-2 border-[#d4af37] shadow-sm hover:shadow-md transition-all">
-            <h3 className="text-xl font-bold font-serif text-[#5c4033] mb-2">{comp.name}</h3>
+          <div key={comp.id} className="relative group p-6 bg-[#fdf6e3] rounded-lg border-2 border-[#d4af37] shadow-sm hover:shadow-md transition-all">
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="text-xl font-bold font-serif text-[#5c4033]">{comp.name}</h3>
+              <CompetitionRowActions 
+                competition={comp} 
+                onUpdate={handleUpdate} 
+                onDelete={handleDelete} 
+              />
+            </div>
             <p className="text-sm text-[#8b4513] italic">{comp.description || 'Sem descrição'}</p>
           </div>
         ))}

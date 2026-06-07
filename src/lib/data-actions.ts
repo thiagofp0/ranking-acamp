@@ -33,16 +33,48 @@ export async function createTeam(name: string) {
   revalidatePath("/admin/equipes");
 }
 
+export async function updateTeamAction(id: string, name: string) {
+  await db.updateTeam(id, name);
+  revalidatePath("/admin/equipes");
+  revalidatePath("/");
+}
+
+export async function deleteTeamAction(id: string) {
+  await db.deleteTeam(id);
+  revalidatePath("/admin/equipes");
+  revalidatePath("/");
+}
+
 export async function createParticipant(name: string, teamId: string) {
   await db.createParticipant(name, teamId);
   revalidatePath("/admin/participantes");
+}
+
+export async function updateParticipantAction(id: string, name: string, teamId: string) {
+  await db.updateParticipant(id, name, teamId);
+  revalidatePath("/admin/participantes");
+  revalidatePath("/");
+}
+
+export async function deleteParticipantAction(id: string) {
+  await db.deleteParticipant(id);
+  revalidatePath("/admin/participantes");
+  revalidatePath("/");
 }
 
 export async function createCompetition(name: string, description?: string) {
   await db.createCompetition(name, description);
   revalidatePath("/admin/provas");
 }
+export async function updateCompetitionAction(id: string, name: string, description?: string) {
+  await db.updateCompetition(id, name, description);
+  revalidatePath("/admin/provas");
+}
 
+export async function deleteCompetitionAction(id: string) {
+  await db.deleteCompetition(id);
+  revalidatePath("/admin/provas");
+}
 export async function addPointsAction(data: {
   teamId?: string;
   participantId?: string;

@@ -107,6 +107,22 @@ export class SQLiteDatabase implements IDatabase {
     return { id, name, points: 0 };
   }
 
+  async updateTeam(id: string, name: string): Promise<void> {
+    this.db.prepare('UPDATE teams SET name = ? WHERE id = ?').run(name, id);
+  }
+
+  async deleteTeam(id: string): Promise<void> {
+    const deleteTx = this.db.transaction(() => {
+      // Remover pontos relacionados, participantes ou apenas impedir se houver dependências?
+      // Por simplicidade e segurança de dados, vamos apenas deletar a equipe.
+      // SQL Foreign Keys cuidariam de impedir se não fosse cascade, mas vamos garantir.
+      this.db.prepare('DELETE FROM points_history WHERE teamId = ?').run(id);
+      this.db.prepare('DELETE FROM participants WHERE teamId = ?').run(id);
+      this.db.prepare('DELETE FROM teams WHERE id = ?').run(id);
+    });
+    deleteTx();
+  }
+
   async getParticipants(): Promise<Participant[]> {
     return this.db.prepare('SELECT * FROM participants ORDER BY name').all() as Participant[];
   }
@@ -117,6 +133,18 @@ export class SQLiteDatabase implements IDatabase {
     return { id, name, teamId, points: 0 };
   }
 
+  async updateParticipant(id: string, name: string, teamId: string): Promise<void> {
+    this.db.prepare('UPDATE participants SET name = ?, teamId = ? WHERE id = ?').run(name, teamId, id);
+  }
+
+  async deleteParticipant(id: string): Promise<void> {
+    const deleteTx = this.db.transaction(() => {
+      this.db.prepare('DELETE FROM points_history WHERE participantId = ?').run(id);
+      this.db.prepare('DELETE FROM participants WHERE id = ?').run(id);
+    });
+    deleteTx();
+  }
+
   async getCompetitions(): Promise<Competition[]> {
     return this.db.prepare('SELECT * FROM competitions').all() as Competition[];
   }
@@ -125,6 +153,15 @@ export class SQLiteDatabase implements IDatabase {
     const id = crypto.randomUUID();
     this.db.prepare('INSERT INTO competitions (id, name, description) VALUES (?, ?, ?)').run(id, name, description);
     return { id, name, description };
+  }
+
+  async updateCompetition(id: string, name: string, description?: string): Promise<void> {
+    this.db.prepare('UPDATE competitions SET name = ?, description = ? WHERE id = ?').run(name, description || null, id);
+  }
+
+  async deleteCompetition(id: string): Promise<void> {
+    this.db.prepare('DELETE FROM points_history WHERE competitionId = ?').run(id);
+    this.db.prepare('DELETE FROM competitions WHERE id = ?').run(id);
   }
 
   async addPoints(data: {

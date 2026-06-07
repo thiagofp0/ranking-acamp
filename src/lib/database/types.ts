@@ -45,14 +45,20 @@ export interface IDatabase {
   // Teams
   getTeams(): Promise<Team[]>;
   createTeam(name: string): Promise<Team>;
+  updateTeam(id: string, name: string): Promise<void>;
+  deleteTeam(id: string): Promise<void>;
   
   // Participants
   getParticipants(): Promise<Participant[]>;
   createParticipant(name: string, teamId: string): Promise<Participant>;
+  updateParticipant(id: string, name: string, teamId: string): Promise<void>;
+  deleteParticipant(id: string): Promise<void>;
   
   // Competitions
   getCompetitions(): Promise<Competition[]>;
   createCompetition(name: string, description?: string): Promise<Competition>;
+  updateCompetition(id: string, name: string, description?: string): Promise<void>;
+  deleteCompetition(id: string): Promise<void>;
   
   // Scoring
   addPoints(data: {
