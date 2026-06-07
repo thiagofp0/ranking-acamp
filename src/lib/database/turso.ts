@@ -95,7 +95,7 @@ export class TursoDatabase implements IDatabase {
 
   async getAdmins(): Promise<Admin[]> {
     const rs = await this.client.execute('SELECT id, username, passwordHash FROM admins ORDER BY username');
-    return rs.rows as unknown as Admin[];
+    return Array.from(rs.rows) as unknown as Admin[];
   }
 
   async createAdmin(username: string, passwordHash: string): Promise<Admin> {
@@ -135,7 +135,7 @@ export class TursoDatabase implements IDatabase {
 
   async getTeams(): Promise<Team[]> {
     const rs = await this.client.execute('SELECT * FROM teams ORDER BY name');
-    return rs.rows as unknown as Team[];
+    return Array.from(rs.rows) as unknown as Team[];
   }
 
   async createTeam(name: string): Promise<Team> {
@@ -164,7 +164,7 @@ export class TursoDatabase implements IDatabase {
 
   async getParticipants(): Promise<Participant[]> {
     const rs = await this.client.execute('SELECT * FROM participants ORDER BY name');
-    return rs.rows as unknown as Participant[];
+    return Array.from(rs.rows) as unknown as Participant[];
   }
 
   async createParticipant(name: string, teamId: string): Promise<Participant> {
@@ -192,7 +192,7 @@ export class TursoDatabase implements IDatabase {
 
   async getCompetitions(): Promise<Competition[]> {
     const rs = await this.client.execute('SELECT * FROM competitions');
-    return rs.rows.map(row => ({
+    return Array.from(rs.rows).map(row => ({
       ...row,
       isCompleted: Boolean(row.isCompleted)
     })) as unknown as Competition[];
@@ -280,12 +280,12 @@ export class TursoDatabase implements IDatabase {
 
   async getTeamRanking(): Promise<Team[]> {
     const rs = await this.client.execute('SELECT * FROM teams ORDER BY points DESC, name ASC');
-    return rs.rows as unknown as Team[];
+    return Array.from(rs.rows) as unknown as Team[];
   }
 
   async getParticipantRanking(): Promise<Participant[]> {
     const rs = await this.client.execute('SELECT * FROM participants ORDER BY points DESC, name ASC');
-    return rs.rows as unknown as Participant[];
+    return Array.from(rs.rows) as unknown as Participant[];
   }
 
   async getPointsHistory(filters: { teamId?: string; participantId?: string }): Promise<PointRecord[]> {
@@ -305,7 +305,7 @@ export class TursoDatabase implements IDatabase {
 
     sql += ' ORDER BY createdAt DESC';
     const rs = await this.client.execute({ sql, args });
-    return rs.rows as unknown as PointRecord[];
+    return Array.from(rs.rows) as unknown as PointRecord[];
   }
 
   async updatePoints(id: string, points: number, description: string): Promise<void> {
@@ -313,7 +313,7 @@ export class TursoDatabase implements IDatabase {
       sql: 'SELECT * FROM points_history WHERE id = ?',
       args: [id]
     });
-    const oldRecord = rs.rows[0] as unknown as PointRecord;
+    const oldRecord = Array.from(rs.rows)[0] as unknown as PointRecord;
     if (!oldRecord) return;
 
     const diff = points - oldRecord.points;
@@ -337,7 +337,7 @@ export class TursoDatabase implements IDatabase {
             sql: 'SELECT teamId FROM participants WHERE id = ?',
             args: [oldRecord.participantId]
           });
-          const p = prs.rows[0] as unknown as { teamId: string };
+          const p = Array.from(prs.rows)[0] as unknown as { teamId: string };
           if (p) {
             batch.push({
               sql: 'UPDATE teams SET points = points + ? WHERE id = ?',
@@ -360,7 +360,7 @@ export class TursoDatabase implements IDatabase {
       sql: 'SELECT * FROM points_history WHERE id = ?',
       args: [id]
     });
-    const oldRecord = rs.rows[0] as unknown as PointRecord;
+    const oldRecord = Array.from(rs.rows)[0] as unknown as PointRecord;
     if (!oldRecord) return;
 
     const pointsToSubtract = oldRecord.points;
@@ -384,7 +384,7 @@ export class TursoDatabase implements IDatabase {
             sql: 'SELECT teamId FROM participants WHERE id = ?',
             args: [oldRecord.participantId]
           });
-          const p = prs.rows[0] as unknown as { teamId: string };
+          const p = Array.from(prs.rows)[0] as unknown as { teamId: string };
           if (p) {
             batch.push({
               sql: 'UPDATE teams SET points = points - ? WHERE id = ?',
