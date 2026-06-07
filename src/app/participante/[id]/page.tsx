@@ -6,7 +6,7 @@ import Link from "next/link";
 import PointRowActions from "@/components/PointRowActions";
 import { redirect } from "next/navigation";
 
-export default async function ParticipanteDetalhesPage({ params }: { params: { id: string } }) {
+export default async function ParticipanteDetalhesPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const session = await getSession();
   const db = getDatabase();
@@ -23,16 +23,6 @@ export default async function ParticipanteDetalhesPage({ params }: { params: { i
 
   const history = await getPointsHistory({ participantId: id });
   const competitions = await db.getCompetitions();
-
-  const handleUpdate = async (pointId: string, points: number, description: string, path: string) => {
-    "use server";
-    await updatePointsAction(pointId, points, description, path);
-  };
-
-  const handleDelete = async (pointId: string, path: string) => {
-    "use server";
-    await deletePointsAction(pointId, path);
-  };
 
   return (
     <div className="min-h-screen bg-[#fdf6e3] p-6 md:p-12 font-serif">
@@ -96,8 +86,8 @@ export default async function ParticipanteDetalhesPage({ params }: { params: { i
                       <PointRowActions 
                         record={record} 
                         revalidatePath={`/participante/${id}`}
-                        onUpdate={handleUpdate}
-                        onDelete={handleDelete}
+                        onUpdate={updatePointsAction}
+                        onDelete={deletePointsAction}
                       />
                     </td>
                   )}
