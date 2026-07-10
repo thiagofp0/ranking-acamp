@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 
 export async function loginAction(username: string, pass: string) {
   const db = getDatabase();
-  let admin = await db.getAdminByUsername(username);
+  const admin = await db.getAdminByUsername(username);
 
   if (admin && admin.passwordHash && await bcrypt.compare(pass, admin.passwordHash)) {
     const expires = new Date(Date.now() + 2 * 60 * 60 * 1000);

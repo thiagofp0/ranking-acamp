@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Edit2, Trash2, Check, X } from "lucide-react";
 
 interface PointRowActionsProps {
   record: { id: string; points: number; description: string };

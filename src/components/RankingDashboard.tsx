@@ -56,8 +56,9 @@ export default function RankingDashboard({
   const exportFullPointsHistory = () => {
     const headers = "Data,Equipe,Participante,Prova/Motivo,Pontos,Descricao";
     const rows = allPoints.map(p => {
-      const team = teams.find(t => t.id === p.teamId)?.name || teams.find(t => t.id === teams.find(part => part.id === p.participantId)?.teamId)?.name || "N/A";
-      const participant = initialParticipantRanking.find(part => part.id === p.participantId)?.name || "Equipe";
+      const participantInfo = initialParticipantRanking.find(part => part.id === p.participantId);
+      const team = teams.find(t => t.id === p.teamId)?.name || participantInfo?.teamName || "N/A";
+      const participant = participantInfo?.name || "Equipe";
       const comp = competitions.find(c => c.id === p.competitionId)?.name || "Avulso";
       const date = new Date(p.createdAt).toLocaleDateString("pt-BR");
       return `${date},${team},${participant},${comp},${p.points},${p.description}`;
@@ -97,7 +98,7 @@ export default function RankingDashboard({
             transition={{ delay: 0.5 }}
             className="text-[#8b4513] text-lg italic max-w-2xl mx-auto"
           >
-            "Buscar-me-eis e me achareis, quando me buscardes de todo o vosso coração."
+            &quot;Buscar-me-eis e me achareis, quando me buscardes de todo o vosso coração.&quot;
           </motion.p>
         </header>
 
@@ -247,7 +248,7 @@ export default function RankingDashboard({
                 ))}
                 {competitions.length === 0 && (
                   <div className="col-span-full py-20 text-center text-[#8b4513] italic text-xl">
-                    "Ainda não há registros das batalhas que virão."
+                    &quot;Ainda não há registros das batalhas que virão.&quot;
                   </div>
                 )}
               </motion.div>

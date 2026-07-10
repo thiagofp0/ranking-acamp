@@ -113,7 +113,7 @@ export default async function PontosPage() {
 
       <div className="bg-[#fdf6e3] p-4 rounded-lg border border-dashed border-[#d4af37] text-center">
         <p className="text-[#8b4513] italic font-serif">
-          "Pois onde estiver o vosso tesouro, aí estará também o vosso coração." — Lucas 12:34
+          &quot;Pois onde estiver o vosso tesouro, aí estará também o vosso coração.&quot; — Lucas 12:34
         </p>
       </div>
     </div>

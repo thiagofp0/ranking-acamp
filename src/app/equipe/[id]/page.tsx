@@ -1,4 +1,4 @@
-import { getPointsHistory, updatePointsAction, deletePointsAction, getTeams } from "@/lib/data-actions";
+import { getPointsHistory, updatePointsAction, deletePointsAction } from "@/lib/data-actions";
 import { getDatabase } from "@/lib/database/sqlite";
 import { getSession } from "@/lib/auth";
 import { ArrowLeft, History, Trophy } from "lucide-react";

@@ -42,7 +42,7 @@ export default function LoginPage() {
             Acesso do Escriba
           </h1>
           <p className="text-sm text-[#8b4513] mt-2 italic">
-            "Buscar-me-eis e me achareis, quando me buscardes de todo o vosso coração."
+            &quot;Buscar-me-eis e me achareis, quando me buscardes de todo o vosso coração.&quot;
           </p>
         </div>
 
