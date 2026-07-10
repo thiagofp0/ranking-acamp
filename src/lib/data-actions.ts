@@ -117,12 +117,14 @@ export async function getPointsHistory(filters: { teamId?: string; participantId
 }
 
 export async function updatePointsAction(id: string, points: number, description: string, revalidatePathStr: string) {
+  'use server';
   await db.updatePoints(id, points, description);
   revalidatePath(revalidatePathStr);
   revalidatePath("/");
 }
 
 export async function deletePointsAction(id: string, revalidatePathStr: string) {
+  'use server';
   await db.deletePoints(id);
   revalidatePath(revalidatePathStr);
   revalidatePath("/");

@@ -77,12 +77,20 @@ export class TursoDatabase implements IDatabase {
     }
   }
 
+  private toPlainRow<T>(row: unknown): T {
+    return { ...(row as Record<string, unknown>) } as T;
+  }
+
+  private toPlainRows<T>(rows: Iterable<unknown>): T[] {
+    return Array.from(rows, row => this.toPlainRow<T>(row));
+  }
+
   async getAdminByUsername(username: string): Promise<Admin | null> {
     const rs = await this.client.execute({
       sql: 'SELECT * FROM admins WHERE username = ?',
       args: [username]
     });
-    return rs.rows[0] ? (rs.rows[0] as unknown as Admin) : null;
+    return rs.rows[0] ? this.toPlainRow<Admin>(rs.rows[0]) : null;
   }
 
   async getAdminById(id: string): Promise<Admin | null> {
@@ -90,12 +98,12 @@ export class TursoDatabase implements IDatabase {
       sql: 'SELECT * FROM admins WHERE id = ?',
       args: [id]
     });
-    return rs.rows[0] ? (rs.rows[0] as unknown as Admin) : null;
+    return rs.rows[0] ? this.toPlainRow<Admin>(rs.rows[0]) : null;
   }
 
   async getAdmins(): Promise<Admin[]> {
     const rs = await this.client.execute('SELECT id, username, passwordHash FROM admins ORDER BY username');
-    return Array.from(rs.rows) as unknown as Admin[];
+    return this.toPlainRows<Admin>(rs.rows);
   }
 
   async createAdmin(username: string, passwordHash: string): Promise<Admin> {
@@ -135,7 +143,7 @@ export class TursoDatabase implements IDatabase {
 
   async getTeams(): Promise<Team[]> {
     const rs = await this.client.execute('SELECT * FROM teams ORDER BY name');
-    return Array.from(rs.rows) as unknown as Team[];
+    return this.toPlainRows<Team>(rs.rows);
   }
 
   async createTeam(name: string): Promise<Team> {
@@ -164,7 +172,7 @@ export class TursoDatabase implements IDatabase {
 
   async getParticipants(): Promise<Participant[]> {
     const rs = await this.client.execute('SELECT * FROM participants ORDER BY name');
-    return Array.from(rs.rows) as unknown as Participant[];
+    return this.toPlainRows<Participant>(rs.rows);
   }
 
   async createParticipant(name: string, teamId: string): Promise<Participant> {
@@ -192,10 +200,10 @@ export class TursoDatabase implements IDatabase {
 
   async getCompetitions(): Promise<Competition[]> {
     const rs = await this.client.execute('SELECT * FROM competitions');
-    return Array.from(rs.rows).map(row => ({
+    return this.toPlainRows<Competition>(rs.rows).map(row => ({
       ...row,
       isCompleted: Boolean(row.isCompleted)
-    })) as unknown as Competition[];
+    }));
   }
 
   async createCompetition(name: string, description?: string, pointsValue: number = 0): Promise<Competition> {
@@ -280,12 +288,12 @@ export class TursoDatabase implements IDatabase {
 
   async getTeamRanking(): Promise<Team[]> {
     const rs = await this.client.execute('SELECT * FROM teams ORDER BY points DESC, name ASC');
-    return Array.from(rs.rows) as unknown as Team[];
+    return this.toPlainRows<Team>(rs.rows);
   }
 
   async getParticipantRanking(): Promise<Participant[]> {
     const rs = await this.client.execute('SELECT * FROM participants ORDER BY points DESC, name ASC');
-    return Array.from(rs.rows) as unknown as Participant[];
+    return this.toPlainRows<Participant>(rs.rows);
   }
 
   async getPointsHistory(filters: { teamId?: string; participantId?: string }): Promise<PointRecord[]> {
@@ -305,7 +313,7 @@ export class TursoDatabase implements IDatabase {
 
     sql += ' ORDER BY createdAt DESC';
     const rs = await this.client.execute({ sql, args });
-    return Array.from(rs.rows) as unknown as PointRecord[];
+    return this.toPlainRows<PointRecord>(rs.rows);
   }
 
   async updatePoints(id: string, points: number, description: string): Promise<void> {
