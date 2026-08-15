@@ -2,7 +2,7 @@ import { getPointsHistory, updatePointsAction, deletePointsAction } from "@/lib/
 import { getDatabase } from "@/lib/database/sqlite";
 import { PointRecord } from "@/lib/database/types";
 import { getSession } from "@/lib/auth";
-import { ArrowLeft, History, Trophy } from "lucide-react";
+import { ArrowLeft, History, Trophy, Users, Crown } from "lucide-react";
 import Link from "next/link";
 import PointRowActions from "@/components/PointRowActions";
 import { redirect } from "next/navigation";
@@ -44,6 +44,29 @@ export default async function EquipeDetalhesPage({ params }: { params: Promise<{
           <div className="flex items-center gap-4">
             <span className="text-6xl font-black text-[#8b4513]">{team.points}</span>
             <span className="text-xl font-bold text-[#d4af37] uppercase tracking-widest">Pontos Totais</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl border-2 border-[#d4af37]/30 shadow-lg overflow-hidden">
+          <div className="bg-[#8b4513] p-4 flex items-center gap-2 text-white">
+            <Users className="w-5 h-5" />
+            <h2 className="text-xl font-bold italic">Participantes da Equipe</h2>
+          </div>
+          <div className="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {participants.filter(p => p.teamId === id).map(p => (
+              <div
+                key={p.id}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#d4af37]/30 bg-[#fdf6e3] text-[#5c4033] font-medium"
+              >
+                {p.isLeader && <Crown className="w-4 h-4 text-[#d4af37] shrink-0" aria-label="Líder" />}
+                <span>{p.name}</span>
+              </div>
+            ))}
+            {participants.filter(p => p.teamId === id).length === 0 && (
+              <p className="col-span-full text-center text-gray-400 italic py-4">
+                Nenhum participante cadastrado nesta equipe.
+              </p>
+            )}
           </div>
         </div>
 

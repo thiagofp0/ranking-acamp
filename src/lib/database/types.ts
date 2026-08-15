@@ -9,6 +9,7 @@ export interface Participant {
   name: string;
   teamId: string;
   points: number;
+  isLeader: boolean;
 }
 
 export interface Competition {
@@ -36,6 +37,26 @@ export interface PointRecord {
   createdAt: string;
 }
 
+export interface AuditLog {
+  id: string;
+  actionType: string;
+  performedBy: string;
+  performedByUsername: string;
+  targetType?: string;
+  targetId?: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface AuditLogFilters {
+  actionType?: string;
+  userId?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  pageSize?: number;
+}
+
 export interface IDatabase {
   // Admins
   getAdmins(): Promise<Admin[]>;
@@ -53,8 +74,8 @@ export interface IDatabase {
   
   // Participants
   getParticipants(): Promise<Participant[]>;
-  createParticipant(name: string, teamId: string): Promise<Participant>;
-  updateParticipant(id: string, name: string, teamId: string): Promise<void>;
+  createParticipant(name: string, teamId: string, isLeader?: boolean): Promise<Participant>;
+  updateParticipant(id: string, name: string, teamId: string, isLeader?: boolean): Promise<void>;
   deleteParticipant(id: string): Promise<void>;
   
   // Competitions
@@ -80,4 +101,15 @@ export interface IDatabase {
   getPointsHistory(filters: { teamId?: string; participantId?: string }): Promise<PointRecord[]>;
   updatePoints(id: string, points: number, description: string): Promise<void>;
   deletePoints(id: string): Promise<void>;
+
+  // Audit Log
+  createAuditLog(data: {
+    actionType: string;
+    performedBy: string;
+    performedByUsername: string;
+    targetType?: string;
+    targetId?: string;
+    description: string;
+  }): Promise<void>;
+  getAuditLogs(filters: AuditLogFilters): Promise<{ items: AuditLog[]; total: number }>;
 }

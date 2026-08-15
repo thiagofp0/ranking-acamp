@@ -4,9 +4,9 @@ import { useState } from "react";
 import { Edit2, Trash2, Check, X } from "lucide-react";
 
 interface ParticipantRowActionsProps {
-  participant: { id: string; name: string; teamId: string };
+  participant: { id: string; name: string; teamId: string; isLeader: boolean };
   teams: { id: string; name: string }[];
-  onUpdate: (id: string, name: string, teamId: string) => Promise<void>;
+  onUpdate: (id: string, name: string, teamId: string, isLeader: boolean) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
@@ -14,10 +14,11 @@ export default function ParticipantRowActions({ participant, teams, onUpdate, on
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(participant.name);
   const [newTeamId, setNewTeamId] = useState(participant.teamId);
+  const [newIsLeader, setNewIsLeader] = useState(participant.isLeader);
 
   const handleUpdate = async () => {
     if (newName.trim() && newTeamId) {
-      await onUpdate(participant.id, newName, newTeamId);
+      await onUpdate(participant.id, newName, newTeamId, newIsLeader);
       setIsEditing(false);
     }
   };
@@ -49,6 +50,15 @@ export default function ParticipantRowActions({ participant, teams, onUpdate, on
             </option>
           ))}
         </select>
+        <label className="flex items-center gap-1 text-xs text-[#5c4033]">
+          <input
+            type="checkbox"
+            checked={newIsLeader}
+            onChange={(e) => setNewIsLeader(e.target.checked)}
+            className="rounded text-[#8b4513] focus:ring-[#8b4513]"
+          />
+          Líder
+        </label>
         <button onClick={handleUpdate} className="text-green-600 hover:bg-green-50 p-1 rounded">
           <Check className="w-4 h-4" />
         </button>
