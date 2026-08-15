@@ -1,11 +1,12 @@
-import { getTeams, createTeam, updateTeamAction, deleteTeamAction } from "@/lib/data-actions";
-import { BookMarked } from "lucide-react";
+import { getTeams, getParticipants, createTeam, updateTeamAction, deleteTeamAction } from "@/lib/data-actions";
+import { BookMarked, AlertTriangle } from "lucide-react";
 import TeamRowActions from "@/components/TeamRowActions";
 
 export const dynamic = "force-dynamic";
 
 export default async function EquipesPage() {
   const teams = await getTeams();
+  const participants = await getParticipants();
 
   const handleCreate = async (formData: FormData) => {
     "use server";
@@ -55,9 +56,20 @@ export default async function EquipesPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#d4af37]/30">
-            {teams.map((team) => (
+            {teams.map((team) => {
+              const hasLeader = participants.some(p => p.teamId === team.id && p.isLeader);
+              return (
               <tr key={team.id} className="hover:bg-[#fdf6e3] transition-colors group">
-                <td className="px-6 py-4 text-[#5c4033] font-medium">{team.name}</td>
+                <td className="px-6 py-4 text-[#5c4033] font-medium">
+                  <span className="flex items-center gap-2">
+                    {team.name}
+                    {!hasLeader && (
+                      <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-200">
+                        <AlertTriangle className="w-3 h-3" /> Sem líder definido
+                      </span>
+                    )}
+                  </span>
+                </td>
                 <td className="px-6 py-4 text-[#8b4513] font-bold">{team.points}</td>
                 <td className="px-6 py-4">
                   <TeamRowActions 
@@ -67,7 +79,8 @@ export default async function EquipesPage() {
                   />
                 </td>
               </tr>
-            ))}
+              );
+            })}
             {teams.length === 0 && (
               <tr>
                 <td colSpan={3} className="px-6 py-8 text-center text-gray-500 italic">

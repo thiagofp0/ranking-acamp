@@ -1,5 +1,5 @@
 ﻿import { createClient, Client, Row, InStatement, InValue } from '@libsql/client';
-import { IDatabase, Team, Participant, Competition, Admin, PointRecord } from './types';
+import { IDatabase, Team, Participant, Competition, Admin, PointRecord, AuditLog, AuditLogFilters } from './types';
 
 // As linhas retornadas pelo driver do libSQL são instâncias com métodos, não
 // objetos simples — não podem ser passadas de Server Components para Client
@@ -47,6 +47,11 @@ export class TursoDatabase implements IDatabase {
           FOREIGN KEY (teamId) REFERENCES teams(id)
         );
       `);
+      try {
+        await this.client.execute(`ALTER TABLE participants ADD COLUMN isLeader INTEGER DEFAULT 0;`);
+      } catch {
+        // Coluna já existe.
+      }
       await this.client.execute(`
         CREATE TABLE IF NOT EXISTS competitions (
           id TEXT PRIMARY KEY,
@@ -77,6 +82,18 @@ export class TursoDatabase implements IDatabase {
           id TEXT PRIMARY KEY,
           username TEXT UNIQUE NOT NULL,
           passwordHash TEXT NOT NULL
+        );
+      `);
+      await this.client.execute(`
+        CREATE TABLE IF NOT EXISTS audit_logs (
+          id TEXT PRIMARY KEY,
+          actionType TEXT NOT NULL,
+          performedBy TEXT NOT NULL,
+          performedByUsername TEXT NOT NULL,
+          targetType TEXT,
+          targetId TEXT,
+          description TEXT NOT NULL,
+          createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
         );
       `);
     } catch (e) {
@@ -171,22 +188,41 @@ export class TursoDatabase implements IDatabase {
 
   async getParticipants(): Promise<Participant[]> {
     const rs = await this.client.execute('SELECT * FROM participants ORDER BY name');
-    return toPlain<Participant>(rs.rows);
+    return toPlain<Participant>(rs.rows).map(participant => ({
+      ...participant,
+      isLeader: Boolean(participant.isLeader)
+    }));
   }
 
-  async createParticipant(name: string, teamId: string): Promise<Participant> {
+  private async countTeamLeaders(teamId: string, excludeParticipantId?: string): Promise<number> {
+    const sql = excludeParticipantId
+      ? 'SELECT COUNT(*) as count FROM participants WHERE teamId = ? AND isLeader = 1 AND id != ?'
+      : 'SELECT COUNT(*) as count FROM participants WHERE teamId = ? AND isLeader = 1';
+    const args = excludeParticipantId ? [teamId, excludeParticipantId] : [teamId];
+    const rs = await this.client.execute({ sql, args });
+    const row = rs.rows[0] as unknown as { count: number };
+    return row ? Number(row.count) : 0;
+  }
+
+  async createParticipant(name: string, teamId: string, isLeader: boolean = false): Promise<Participant> {
+    if (isLeader && (await this.countTeamLeaders(teamId)) >= 2) {
+      throw new Error('Esta equipe já possui o máximo de 2 líderes.');
+    }
     const id = crypto.randomUUID();
     await this.client.execute({
-      sql: 'INSERT INTO participants (id, name, teamId) VALUES (?, ?, ?)',
-      args: [id, name, teamId]
+      sql: 'INSERT INTO participants (id, name, teamId, isLeader) VALUES (?, ?, ?, ?)',
+      args: [id, name, teamId, isLeader ? 1 : 0]
     });
-    return { id, name, teamId, points: 0 };
+    return { id, name, teamId, points: 0, isLeader };
   }
 
-  async updateParticipant(id: string, name: string, teamId: string): Promise<void> {
+  async updateParticipant(id: string, name: string, teamId: string, isLeader: boolean = false): Promise<void> {
+    if (isLeader && (await this.countTeamLeaders(teamId, id)) >= 2) {
+      throw new Error('Esta equipe já possui o máximo de 2 líderes.');
+    }
     await this.client.execute({
-      sql: 'UPDATE participants SET name = ?, teamId = ? WHERE id = ?',
-      args: [name, teamId, id]
+      sql: 'UPDATE participants SET name = ?, teamId = ?, isLeader = ? WHERE id = ?',
+      args: [name, teamId, isLeader ? 1 : 0, id]
     });
   }
 
@@ -407,6 +443,57 @@ export class TursoDatabase implements IDatabase {
     });
 
     await this.client.batch(batch, 'write');
+  }
+
+  async createAuditLog(data: {
+    actionType: string;
+    performedBy: string;
+    performedByUsername: string;
+    targetType?: string;
+    targetId?: string;
+    description: string;
+  }): Promise<void> {
+    const id = crypto.randomUUID();
+    await this.client.execute({
+      sql: 'INSERT INTO audit_logs (id, actionType, performedBy, performedByUsername, targetType, targetId, description) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      args: [id, data.actionType, data.performedBy, data.performedByUsername, data.targetType || null, data.targetId || null, data.description]
+    });
+  }
+
+  async getAuditLogs(filters: AuditLogFilters): Promise<{ items: AuditLog[]; total: number }> {
+    let where = ' WHERE 1=1';
+    const args: InValue[] = [];
+
+    if (filters.actionType) {
+      where += ' AND actionType = ?';
+      args.push(filters.actionType);
+    }
+    if (filters.userId) {
+      where += ' AND performedBy = ?';
+      args.push(filters.userId);
+    }
+    if (filters.from) {
+      where += ' AND createdAt >= ?';
+      args.push(filters.from);
+    }
+    if (filters.to) {
+      where += ' AND createdAt <= ?';
+      args.push(filters.to);
+    }
+
+    const countRs = await this.client.execute({ sql: `SELECT COUNT(*) as count FROM audit_logs${where}`, args });
+    const total = Number((countRs.rows[0] as unknown as { count: number })?.count ?? 0);
+
+    const page = filters.page && filters.page > 0 ? filters.page : 1;
+    const pageSize = filters.pageSize && filters.pageSize > 0 ? filters.pageSize : 20;
+    const offset = (page - 1) * pageSize;
+
+    const rs = await this.client.execute({
+      sql: `SELECT * FROM audit_logs${where} ORDER BY createdAt DESC LIMIT ? OFFSET ?`,
+      args: [...args, pageSize, offset]
+    });
+
+    return { items: toPlain<AuditLog>(rs.rows), total };
   }
 }
 

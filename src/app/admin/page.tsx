@@ -1,5 +1,6 @@
 import { getTeams, getParticipants, getCompetitions } from "@/lib/data-actions";
 import { BookOpen, Users, Trophy, ScrollText } from "lucide-react";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -9,9 +10,9 @@ export default async function AdminDashboard() {
   const competitions = await getCompetitions();
 
   const stats = [
-    { label: "Equipes", value: teams.length, icon: Users, color: "text-blue-600" },
-    { label: "Participantes", value: participants.length, icon: ScrollText, color: "text-green-600" },
-    { label: "Provas", value: competitions.length, icon: Trophy, color: "text-amber-600" },
+    { label: "Equipes", value: teams.length, icon: Users, color: "text-blue-600", href: "/admin/equipes" },
+    { label: "Participantes", value: participants.length, icon: ScrollText, color: "text-green-600", href: "/admin/participantes" },
+    { label: "Provas", value: competitions.length, icon: Trophy, color: "text-amber-600", href: "/admin/provas" },
   ];
 
   return (
@@ -23,7 +24,11 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat) => (
-          <div key={stat.label} className="p-6 bg-white rounded-xl border-2 border-[#d4af37] shadow-sm hover:shadow-md transition-shadow">
+          <Link
+            key={stat.label}
+            href={stat.href}
+            className="p-6 bg-white rounded-xl border-2 border-[#d4af37] shadow-sm hover:shadow-md transition-shadow cursor-pointer block"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">{stat.label}</p>
@@ -31,7 +36,7 @@ export default async function AdminDashboard() {
               </div>
               <stat.icon className={`w-10 h-10 ${stat.color} opacity-80`} />
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 

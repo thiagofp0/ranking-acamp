@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { BookOpen, Users, Trophy, ScrollText, LogOut, ShieldAlert } from "lucide-react";
+import { BookOpen, Users, Trophy, ScrollText, LogOut, ShieldAlert, History } from "lucide-react";
 import { logoutAction } from "@/lib/actions";
+import ToastProvider from "@/components/ToastProvider";
 
 export default function AdminLayout({
   children,
@@ -8,6 +9,7 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-[#fdf6e3] flex">
       {/* Sidebar */}
       <aside className="w-64 bg-[#5c4033] text-white p-6 flex flex-col border-r-4 border-[#d4af37]">
@@ -37,6 +39,10 @@ export default function AdminLayout({
             <ShieldAlert className="w-5 h-5 text-[#d4af37]" />
             <span className="font-medium">Gerenciar Escribas</span>
           </Link>
+          <Link href="/admin/auditoria" className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#8b4513] transition-colors group">
+            <History className="w-5 h-5 group-hover:text-[#d4af37]" />
+            <span className="font-medium">Auditoria</span>
+          </Link>
           <Link href="/" className="flex items-center gap-3 p-3 rounded-lg hover:bg-[#8b4513] transition-colors group">
             <Trophy className="w-5 h-5 text-[#d4af37]" />
             <span className="font-medium">Ver Ranking</span>
@@ -58,5 +64,6 @@ export default function AdminLayout({
         </div>
       </main>
     </div>
+    </ToastProvider>
   );
 }
