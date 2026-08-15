@@ -1,6 +1,7 @@
 import { getTeams, getParticipants, createTeam, updateTeamAction, deleteTeamAction } from "@/lib/data-actions";
 import { BookMarked, AlertTriangle } from "lucide-react";
 import TeamRowActions from "@/components/TeamRowActions";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,9 @@ export default async function EquipesPage() {
               <tr key={team.id} className="hover:bg-[#fdf6e3] transition-colors group">
                 <td className="px-6 py-4 text-[#5c4033] font-medium">
                   <span className="flex items-center gap-2">
-                    {team.name}
+                    <Link href={`/equipe/${team.id}`} className="hover:underline hover:text-[#8b4513]">
+                      {team.name}
+                    </Link>
                     {!hasLeader && (
                       <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-700 rounded border border-amber-200">
                         <AlertTriangle className="w-3 h-3" /> Sem líder definido

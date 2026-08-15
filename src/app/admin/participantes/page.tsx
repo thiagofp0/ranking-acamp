@@ -1,6 +1,6 @@
 import { getTeams, getParticipants, createParticipant, updateParticipantAction, deleteParticipantAction } from "@/lib/data-actions";
-import { ScrollText, Crown } from "lucide-react";
-import ParticipantRowActions from "@/components/ParticipantRowActions";
+import { ScrollText } from "lucide-react";
+import ParticipantsTable from "@/components/ParticipantsTable";
 
 export const dynamic = "force-dynamic";
 
@@ -68,49 +68,12 @@ export default async function ParticipantesPage() {
         </button>
       </form>
 
-      <div className="overflow-hidden rounded-lg border border-[#d4af37]">
-        <table className="w-full text-left">
-          <thead className="bg-[#8b4513] text-white">
-            <tr>
-              <th className="px-6 py-3 font-serif italic">Nome</th>
-              <th className="px-6 py-3 font-serif italic">Equipe</th>
-              <th className="px-6 py-3 font-serif italic">Pontos Individuais</th>
-              <th className="px-6 py-3 font-serif italic w-32">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#d4af37]/30">
-            {participants.map((participant) => (
-              <tr key={participant.id} className="hover:bg-[#fdf6e3] transition-colors group">
-                <td className="px-6 py-4 text-[#5c4033] font-medium">
-                  <span className="flex items-center gap-1.5">
-                    {participant.name}
-                    {participant.isLeader && (
-                      <Crown className="w-4 h-4 text-[#d4af37]" aria-label="Líder" />
-                    )}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-[#5c4033]">{teams.find(t => t.id === participant.teamId)?.name || 'N/A'}</td>
-                <td className="px-6 py-4 text-[#8b4513] font-bold">{participant.points}</td>
-                <td className="px-6 py-4">
-                  <ParticipantRowActions 
-                    participant={participant} 
-                    teams={teams}
-                    onUpdate={handleUpdate} 
-                    onDelete={handleDelete} 
-                  />
-                </td>
-              </tr>
-            ))}
-            {participants.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-6 py-8 text-center text-gray-500 italic">
-                  Nenhum participante cadastrado ainda.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ParticipantsTable
+        participants={participants}
+        teams={teams}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+      />
     </div>
   );
 }
