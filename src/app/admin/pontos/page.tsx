@@ -1,6 +1,8 @@
 import { getTeams, getParticipants, getCompetitions, addPointsAction } from "@/lib/data-actions";
 import { ScrollText, Plus } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function PontosPage() {
   const teams = await getTeams();
   const participants = await getParticipants();

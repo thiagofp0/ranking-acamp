@@ -2,6 +2,8 @@ import { getTeams, getParticipants, createParticipant, updateParticipantAction, 
 import { ScrollText } from "lucide-react";
 import ParticipantRowActions from "@/components/ParticipantRowActions";
 
+export const dynamic = "force-dynamic";
+
 export default async function ParticipantesPage() {
   const teams = await getTeams();
   const participants = await getParticipants();

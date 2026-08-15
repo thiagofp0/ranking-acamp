@@ -2,6 +2,8 @@ import { getCompetitions, createCompetition, updateCompetitionAction, deleteComp
 import { Trophy } from "lucide-react";
 import CompetitionRowActions from "@/components/CompetitionRowActions";
 
+export const dynamic = "force-dynamic";
+
 export default async function ProvasPage() {
   const competitions = await getCompetitions();
   const teams = await getTeams();

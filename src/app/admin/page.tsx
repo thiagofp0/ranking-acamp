@@ -1,6 +1,8 @@
 import { getTeams, getParticipants, getCompetitions } from "@/lib/data-actions";
 import { BookOpen, Users, Trophy, ScrollText } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminDashboard() {
   const teams = await getTeams();
   const participants = await getParticipants();

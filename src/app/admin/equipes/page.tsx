@@ -2,6 +2,8 @@ import { getTeams, createTeam, updateTeamAction, deleteTeamAction } from "@/lib/
 import { BookMarked } from "lucide-react";
 import TeamRowActions from "@/components/TeamRowActions";
 
+export const dynamic = "force-dynamic";
+
 export default async function EquipesPage() {
   const teams = await getTeams();
 
