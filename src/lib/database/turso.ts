@@ -1,4 +1,4 @@
-import { createClient, Client, Row } from '@libsql/client';
+﻿import { createClient, Client, Row, InStatement, InValue } from '@libsql/client';
 import { IDatabase, Team, Participant, Competition, Admin, PointRecord } from './types';
 
 // As linhas retornadas pelo driver do libSQL são instâncias com métodos, não
@@ -251,7 +251,7 @@ export class TursoDatabase implements IDatabase {
     description: string;
   }): Promise<void> {
     const id = crypto.randomUUID();
-    const batch: any[] = [
+    const batch: InStatement[] = [
       {
         sql: 'INSERT INTO points_history (id, teamId, participantId, competitionId, points, description) VALUES (?, ?, ?, ?, ?, ?)',
         args: [id, data.teamId || null, data.participantId || null, data.competitionId || null, data.points, data.description]
@@ -297,7 +297,7 @@ export class TursoDatabase implements IDatabase {
 
   async getPointsHistory(filters: { teamId?: string; participantId?: string }): Promise<PointRecord[]> {
     let sql = 'SELECT * FROM points_history WHERE 1=1';
-    const args: any[] = [];
+    const args: InValue[] = [];
 
     if (filters.teamId && filters.participantId) {
        sql += ' AND (teamId = ? OR participantId = ?)';
@@ -324,7 +324,7 @@ export class TursoDatabase implements IDatabase {
     if (!oldRecord) return;
 
     const diff = points - oldRecord.points;
-    const batch: any[] = [];
+    const batch: InStatement[] = [];
 
     if (oldRecord.teamId) {
       batch.push({
@@ -371,7 +371,7 @@ export class TursoDatabase implements IDatabase {
     if (!oldRecord) return;
 
     const pointsToSubtract = oldRecord.points;
-    const batch: any[] = [];
+    const batch: InStatement[] = [];
 
     if (oldRecord.teamId) {
       batch.push({
@@ -418,3 +418,4 @@ export function getDatabase(): IDatabase {
   }
   return dbInstance;
 }
+

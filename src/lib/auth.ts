@@ -14,7 +14,7 @@ export async function login(formData: FormData) {
   const password = formData.get("password") as string;
 
   const db = getDatabase();
-  let admin = await db.getAdminByUsername(username);
+  const admin = await db.getAdminByUsername(username);
 
   if (admin && await bcrypt.compare(password, admin.passwordHash)) {
     const expires = new Date(Date.now() + 2 * 60 * 60 * 1000);

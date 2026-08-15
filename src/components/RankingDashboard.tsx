@@ -109,7 +109,7 @@ export default function RankingDashboard({
             transition={{ delay: 0.5 }}
             className="text-[#8b4513] text-lg italic max-w-2xl mx-auto"
           >
-            "Buscar-me-eis e me achareis, quando me buscardes de todo o vosso coração."
+            &ldquo;Buscar-me-eis e me achareis, quando me buscardes de todo o vosso coração.&rdquo;
           </motion.p>
         </header>
 
@@ -259,7 +259,7 @@ export default function RankingDashboard({
                 ))}
                 {competitions.length === 0 && (
                   <div className="col-span-full py-20 text-center text-[#8b4513] italic text-xl">
-                    "Ainda não há registros das batalhas que virão."
+                    &ldquo;Ainda não há registros das batalhas que virão.&rdquo;
                   </div>
                 )}
               </motion.div>

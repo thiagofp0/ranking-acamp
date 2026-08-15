@@ -1,6 +1,6 @@
 import { getAdmins, createAdminAction, updateAdminAction, deleteAdminAction } from "@/lib/data-actions";
 import { getSession } from "@/lib/auth";
-import { ShieldAlert, UserPlus, Trash2, Edit2, Check, X } from "lucide-react";
+import { ShieldAlert, UserPlus, Edit2 } from "lucide-react";
 import DeleteAdminButton from "@/components/DeleteAdminButton";
 
 export default async function UsuariosAdminPage() {
