@@ -1,6 +1,7 @@
 import { getPointsHistory, updatePointsAction, deletePointsAction, getParticipants, getTeams } from "@/lib/data-actions";
 import { getDatabase } from "@/lib/database/sqlite";
 import { getSession } from "@/lib/auth";
+import { PointRecord } from "@/lib/database/types";
 import { ArrowLeft, History, User } from "lucide-react";
 import Link from "next/link";
 import PointRowActions from "@/components/PointRowActions";
@@ -67,7 +68,7 @@ export default async function ParticipanteDetalhesPage({ params }: { params: Pro
               </tr>
             </thead>
             <tbody className="divide-y divide-[#d4af37]/10">
-              {history.map((record) => (
+              {history.map((record: PointRecord) => (
                 <tr key={record.id} className="group hover:bg-gray-50 transition-colors">
                   <td className="px-6 py-4 text-xs text-gray-500 whitespace-nowrap">
                     {new Date(record.createdAt).toLocaleDateString("pt-BR")}

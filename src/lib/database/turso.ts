@@ -1,5 +1,12 @@
-import { createClient, Client } from '@libsql/client';
+import { createClient, Client, Row } from '@libsql/client';
 import { IDatabase, Team, Participant, Competition, Admin, PointRecord } from './types';
+
+// As linhas retornadas pelo driver do libSQL são instâncias com métodos, não
+// objetos simples — não podem ser passadas de Server Components para Client
+// Components. Convertemos para objetos JSON simples aqui, uma única vez.
+function toPlain<T>(rows: Row[]): T[] {
+  return JSON.parse(JSON.stringify(rows)) as T[];
+}
 
 export class TursoDatabase implements IDatabase {
   private client: Client;
@@ -82,7 +89,7 @@ export class TursoDatabase implements IDatabase {
       sql: 'SELECT * FROM admins WHERE username = ?',
       args: [username]
     });
-    return rs.rows[0] ? (rs.rows[0] as unknown as Admin) : null;
+    return rs.rows[0] ? toPlain<Admin>(rs.rows)[0] : null;
   }
 
   async getAdminById(id: string): Promise<Admin | null> {
@@ -90,12 +97,12 @@ export class TursoDatabase implements IDatabase {
       sql: 'SELECT * FROM admins WHERE id = ?',
       args: [id]
     });
-    return rs.rows[0] ? (rs.rows[0] as unknown as Admin) : null;
+    return rs.rows[0] ? toPlain<Admin>(rs.rows)[0] : null;
   }
 
   async getAdmins(): Promise<Admin[]> {
     const rs = await this.client.execute('SELECT id, username, passwordHash FROM admins ORDER BY username');
-    return Array.from(rs.rows) as unknown as Admin[];
+    return toPlain<Admin>(rs.rows);
   }
 
   async createAdmin(username: string, passwordHash: string): Promise<Admin> {
@@ -135,7 +142,7 @@ export class TursoDatabase implements IDatabase {
 
   async getTeams(): Promise<Team[]> {
     const rs = await this.client.execute('SELECT * FROM teams ORDER BY name');
-    return Array.from(rs.rows) as unknown as Team[];
+    return toPlain<Team>(rs.rows);
   }
 
   async createTeam(name: string): Promise<Team> {
@@ -164,7 +171,7 @@ export class TursoDatabase implements IDatabase {
 
   async getParticipants(): Promise<Participant[]> {
     const rs = await this.client.execute('SELECT * FROM participants ORDER BY name');
-    return Array.from(rs.rows) as unknown as Participant[];
+    return toPlain<Participant>(rs.rows);
   }
 
   async createParticipant(name: string, teamId: string): Promise<Participant> {
@@ -192,10 +199,10 @@ export class TursoDatabase implements IDatabase {
 
   async getCompetitions(): Promise<Competition[]> {
     const rs = await this.client.execute('SELECT * FROM competitions');
-    return Array.from(rs.rows).map(row => ({
-      ...row,
-      isCompleted: Boolean(row.isCompleted)
-    })) as unknown as Competition[];
+    return toPlain<Competition>(rs.rows).map(competition => ({
+      ...competition,
+      isCompleted: Boolean(competition.isCompleted)
+    }));
   }
 
   async createCompetition(name: string, description?: string, pointsValue: number = 0): Promise<Competition> {
@@ -280,12 +287,12 @@ export class TursoDatabase implements IDatabase {
 
   async getTeamRanking(): Promise<Team[]> {
     const rs = await this.client.execute('SELECT * FROM teams ORDER BY points DESC, name ASC');
-    return Array.from(rs.rows) as unknown as Team[];
+    return toPlain<Team>(rs.rows);
   }
 
   async getParticipantRanking(): Promise<Participant[]> {
     const rs = await this.client.execute('SELECT * FROM participants ORDER BY points DESC, name ASC');
-    return Array.from(rs.rows) as unknown as Participant[];
+    return toPlain<Participant>(rs.rows);
   }
 
   async getPointsHistory(filters: { teamId?: string; participantId?: string }): Promise<PointRecord[]> {
@@ -305,7 +312,7 @@ export class TursoDatabase implements IDatabase {
 
     sql += ' ORDER BY createdAt DESC';
     const rs = await this.client.execute({ sql, args });
-    return Array.from(rs.rows) as unknown as PointRecord[];
+    return toPlain<PointRecord>(rs.rows);
   }
 
   async updatePoints(id: string, points: number, description: string): Promise<void> {

@@ -7,16 +7,16 @@ export default async function Home() {
   const teamRanking = await getTeamRanking();
   const participantRankingRaw = await getParticipantRanking();
   const session = await getSession();
-  
+
   const db = getDatabase();
   const teams = await db.getTeams();
   const participants = await db.getParticipants();
   const competitions = await db.getCompetitions();
   const allPoints = await db.getPointsHistory({});
-  
-  const participantRanking = participantRankingRaw.map(p => ({
+
+  const participantRanking = participantRankingRaw.map((p) => ({
     ...p,
-    teamName: teams.find(t => t.id === p.teamId)?.name
+    teamName: teams.find((t) => t.id === p.teamId)?.name
   }));
 
   return (

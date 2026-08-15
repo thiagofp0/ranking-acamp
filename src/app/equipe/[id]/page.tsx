@@ -1,5 +1,6 @@
 import { getPointsHistory, updatePointsAction, deletePointsAction, getTeams } from "@/lib/data-actions";
 import { getDatabase } from "@/lib/database/sqlite";
+import { PointRecord } from "@/lib/database/types";
 import { getSession } from "@/lib/auth";
 import { ArrowLeft, History, Trophy } from "lucide-react";
 import Link from "next/link";
@@ -63,7 +64,7 @@ export default async function EquipeDetalhesPage({ params }: { params: Promise<{
               </tr>
             </thead>
             <tbody className="divide-y divide-[#d4af37]/10">
-              {history.map((record) => {
+              {history.map((record: PointRecord) => {
                 const participant = participants.find(p => p.id === record.participantId);
                 return (
                   <tr key={record.id} className="group hover:bg-gray-50 transition-colors">
